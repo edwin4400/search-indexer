@@ -10,6 +10,7 @@ let lastQuery = "";
 let lastMatch = "";
 let currentScope = "all";
 let typingTimer = null;
+let quitting = false;
 
 const SCOPE_LABELS = {
   all: "Everything",
@@ -566,8 +567,10 @@ async function renderPdf(preview, item, expression, before) {
 // ------------------------------------------------------------------- status
 
 async function refreshStatus() {
+  if (quitting) return;
   try {
     const status = await api("/api/status");
+    if (quitting) return;
     const pill = $("mode");
     pill.textContent = status.mode + (status.busy ? "…" : "");
     pill.className = "pill"
@@ -592,6 +595,7 @@ async function refreshStatus() {
     renderScopes(status.scopes);
     renderRecent(status.recent);
   } catch (error) {
+    if (quitting) return;
     $("mode").textContent = "disconnected";
     notice("Content Search is not responding. Close this tab and start the app again.");
   }
@@ -768,13 +772,33 @@ $("clear-index").addEventListener("click", async () => {
   }
 });
 
+function showStopped() {
+  quitting = true;
+  const pill = $("mode");
+  pill.textContent = "stopped";
+  pill.className = "pill";
+  $("quit-app").disabled = true;
+  notice("Content Search has stopped. You can close this tab.");
+}
+
 $("quit-app").addEventListener("click", async () => {
   if (!confirm("Stop Content Search? This tab will stop working.")) return;
+  const quitButton = $("quit-app");
+  quitting = true;
+  quitButton.disabled = true;
+  notice("Stopping Content Search...");
   try {
     await api("/api/quit", { method: "POST", body: "{}" });
-    notice("Stopping — you can close this tab. Start the app again to restart it.");
+    showStopped();
   } catch (error) {
-    notice(`could not stop: ${error.message}`);
+    if (error instanceof TypeError) {
+      // The server can close the socket before the browser reads its reply.
+      showStopped();
+    } else {
+      quitting = false;
+      quitButton.disabled = false;
+      notice(`could not stop: ${error.message}`);
+    }
   }
 });
 
