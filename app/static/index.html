@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content Search</title>
+  <!-- Inline icon: avoids a 404 for /favicon.ico with no extra file to serve. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5' fill='none' stroke='%236f8dff' stroke-width='2'/%3E%3Cline x1='15.4' y1='15.4' x2='21' y2='21' stroke='%236f8dff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
+        <line x1="15.4" y1="15.4" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Content Search</span>
+    </div>
+    <div class="statusbar">
+      <span id="mode" class="pill">starting</span>
+      <span id="counts" class="counts"></span>
+    </div>
+    <div class="actions">
+      <button id="folders-btn" class="btn" type="button">Folders</button>
+    </div>
+  </header>
+
+  <div id="notice" class="notice" hidden></div>
+
+  <main class="shell">
+    <form id="search-form" class="searchbar" autocomplete="off" role="search">
+      <svg class="glyph" aria-hidden="true"><use href="/icons.svg#i-search"></use></svg>
+      <input id="q" type="search" list="recent-list"
+             placeholder="Search names, contents, mail and attachments" autofocus>
+      <datalist id="recent-list"></datalist>
+      <button type="submit" class="btn primary">Search</button>
+    </form>
+    <div id="search-meta" class="meta"></div>
+
+    <div class="panes">
+      <nav id="scopes" class="rail" aria-label="Search scope"></nav>
+      <div class="pane results-pane">
+        <ul id="results" class="results"></ul>
+      </div>
+      <section id="preview" class="pane preview"></section>
+    </div>
+  </main>
+
+  <aside id="drawer" class="drawer" hidden aria-label="Folders and jobs">
+    <div class="drawer-head">
+      <h2>Folders and jobs</h2>
+      <button id="close-drawer" class="btn" type="button">Close</button>
+    </div>
+
+    <div class="field">
+      <label for="new-root">Add a folder</label>
+      <div class="row">
+        <input id="new-root" placeholder="C:\Users\you\Documents" style="flex:1">
+        <button id="add-root" class="btn primary" type="button">Add</button>
+      </div>
+    </div>
+
+    <ul id="roots" class="roots"></ul>
+
+    <div class="field">
+      <label for="interval">Watch interval (seconds)</label>
+      <input id="interval" type="number" min="0.5" step="0.5" value="2">
+    </div>
+    <div class="row">
+      <button id="index-now" class="btn primary" type="button">Index now</button>
+      <button id="watch" class="btn" type="button">Watch</button>
+      <button id="stop" class="btn" type="button">Stop</button>
+      <button id="verify-btn" class="btn" type="button">Check index</button>
+    </div>
+    <div id="verify-out"></div>
+    <p class="hint-text">
+      Adding a folder indexes it straight away. While watching, a new folder is
+      picked up within one scan. An unticked folder stops being maintained but
+      keeps what is already indexed.
+    </p>
+
+    <h3>Outlook mail</h3>
+    <div class="row">
+      <button id="sync-mail" class="btn" type="button">Sync mail</button>
+      <button id="sync-mail-com" class="btn" type="button">Sync via Outlook</button>
+      <label class="inline">limit <input id="mail-limit" type="number" min="0" step="50" value="500"></label>
+    </div>
+    <p class="hint-text">
+      <b>Sync mail</b> reads your PST/OST directly, so close Outlook first — it
+      locks the file, and this route cannot open messages afterwards.
+      <b>Sync via Outlook</b> needs Outlook running, is slower, and records the
+      item ids that let you open an email or its attachments by double-clicking.
+      A limit stops early and leaves deletions alone; set 0 to sync everything.
+    </p>
+
+    <div class="row">
+      <button id="clear-index" class="btn danger" type="button">Clear index</button>
+      <button id="quit-app" class="btn" type="button">Quit app</button>
+    </div>
+
+    <h3>Progress</h3>
+    <pre id="progress" class="progress">idle</pre>
+
+    <h3>Not yet hardened</h3>
+    <p class="callout">
+      Extraction runs in-process, so a malicious document is parsed with this
+      app's privileges. Point it at folders you trust until the extraction
+      sandbox lands.
+    </p>
+  </aside>
+
+  <script src="/app.js"></script>
+</body>
+</html>

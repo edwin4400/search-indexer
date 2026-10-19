@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.log
+.venv/
+index/
+sample/
+testrun/
+app/config.json
+attachments/
+build/
+dist/
+ui-check.png
